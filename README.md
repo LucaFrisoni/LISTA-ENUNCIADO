@@ -1,5 +1,5 @@
 <div align="right">
-<img width="32px" src="img/algo2.svg">
+<img width="32px" src="assets/img/algo2.svg">
 </div>
 
 # TDA LISTA/PILA/COLA
