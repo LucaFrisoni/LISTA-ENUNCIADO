@@ -171,13 +171,13 @@ Esta sección describe cómo se verifican todas las funciones primitivas del pro
 
 Se realizan **106 pruebas unitarias** que incluyen:
 
-- 🔹**Pruebas de creacion**:
-- 🔹**Pruebas de incercion**:
-- 🔹**Pruebas de eliminacion**:
-- 🔹**Pruebas de liberacion de memoria**:
-- 🔹**Pruebas de iteracion**:
-- 🔹**Pruebas de combinacion de funciones**:
-- 🔹**Pruebas de estres**:
+- 🔹**Pruebas de creacion**
+- 🔹**Pruebas de incercion**
+- 🔹**Pruebas de eliminacion**
+- 🔹**Pruebas de liberacion de memoria**
+- 🔹**Pruebas de iteracion**
+- 🔹**Pruebas de combinacion de funciones**
+- 🔹**Pruebas de estres**
 
 ### Compilación y ejecución de tests
 
@@ -193,7 +193,7 @@ Para ejecutar los tests:
 ./tests
 ```
 
-- Para ejecutar con valgrind:
+Para ejecutar con valgrind:
 
 ```bash
 makefile valgrind_t
@@ -223,9 +223,9 @@ Una _lista circular_ es una variante de la lista enlazada en la que el ultimo no
 
 **Maneras de implementarla**:
 
-- 🔁 **Simplemente enlazada circular:** cada nodo apunta al siguiente, y el último apunta al primero.
+- 🔁**Simplemente enlazada circular:** cada nodo apunta al siguiente, y el último apunta al primero.
 
-- 🔁 **Doblemente enlazada circular:** cada nodo apunta tanto al siguiente como al anterior, y el primero y el último se conectan entre sí en ambos sentidos.
+- 🔁**Doblemente enlazada circular:** cada nodo apunta tanto al siguiente como al anterior, y el primero y el último se conectan entre sí en ambos sentidos.
 
 ### 3. Explicar la diferencia de funcionamiento entre cola y pila.
 
@@ -235,7 +235,7 @@ Operaciones principales:
 
 - 🆙apilar (push) → mete un elemento arriba de la pila.
 
-- ⬇️ desapilar (pop) → saca el último elemento agregado.
+- ⬇️desapilar (pop) → saca el último elemento agregado.
 
 A diferenica, la **cola** funciona on el principio FIFO (First In, First Out): el primero en entrar es el primero en salir.
 
