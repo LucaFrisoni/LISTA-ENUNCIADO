@@ -9,7 +9,7 @@
 - Para compilar:
 
 ```bash
-makefile compilar
+make compilar
 ```
 
 - Para ejecutar:
@@ -21,7 +21,7 @@ makefile compilar
 - Para ejecutar con valgrind:
 
 ```bash
-makefile valgrind
+make valgrind
 ```
 
 ---
@@ -184,7 +184,7 @@ Se realizan **106 pruebas unitarias** que incluyen:
 Para compilar los tests:
 
 ```bash
-makefile compilar_t
+make compilar_t
 ```
 
 Para ejecutar los tests:
@@ -196,7 +196,7 @@ Para ejecutar los tests:
 Para ejecutar con valgrind:
 
 ```bash
-makefile valgrind_t
+make valgrind_t
 ```
 
 ## 📚 Respuestas a las preguntas teóricas

@@ -542,10 +542,6 @@ size_t tp1_con_cada_pokemon(tp1_t *un_tp, bool (*f)(struct pokemon *, void *),
 	if (!un_tp || !f)
 		return 0;
 
-	//Como ya viene ordenando por id por default, me fijo si lo quiere ordenando por nombre
-	if (extra != NULL && strcmp(extra, "nombre") == 0)
-		bubbleSort_pokemones_alfabeticamente_asc_optimizado(un_tp);
-
 	for (i = 0; i < un_tp->cantidad; i++) {
 		count++;
 		if (!f(un_tp->pokemones[i], extra)) {
