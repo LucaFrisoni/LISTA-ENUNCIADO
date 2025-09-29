@@ -8,23 +8,23 @@ typedef struct nodo {
 	struct nodo *siguiente;
 } nodo_t;
 
-typedef struct lista {
+struct lista {
 	nodo_t *primero;
 	nodo_t *ultimo;
 	size_t cantidad;
-} lista_t;
+};
 
-typedef struct lista_iterador {
+struct lista_iterador {
 	nodo_t *actual;
-} lista_iterador_t;
+};
 
-typedef struct pila {
+struct pila {
 	lista_t *lista;
-} pila_t;
+};
 
-typedef struct cola {
+struct cola {
 	lista_t *lista;
-} cola_t;
+};
 
 // ------------------------------------------------------------------------------------------------------------Lista
 lista_t *lista_crear()
@@ -217,10 +217,6 @@ void *lista_eliminar_elemento(lista_t *lista, size_t posicion)
 	// //Caso que eliminamos el ultimo unico nodo
 	if (!nodo_actual->siguiente)
 		lista->ultimo = nodo_previo; //Es NULL
-
-	if (nodo_actual) {
-		/* code */
-	}
 
 	free(nodo_actual);
 	lista->cantidad--;

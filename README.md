@@ -169,11 +169,12 @@ Esta sección describe cómo se verifican todas las funciones primitivas del pro
 
 ### Cobertura de pruebas
 
-Se realizan **106 pruebas unitarias** que incluyen:
+Se realizan **171 pruebas unitarias** que incluyen:
 
 - 🔹**Pruebas de creacion**
 - 🔹**Pruebas de incercion**
 - 🔹**Pruebas de eliminacion**
+- 🔹**Pruebas de busqueda**
 - 🔹**Pruebas de liberacion de memoria**
 - 🔹**Pruebas de iteracion**
 - 🔹**Pruebas de combinacion de funciones**
@@ -288,19 +289,19 @@ Funciones típicas:
 
 - **`lista_agregar`** → O(1)
 
-- **`lista_insertar`** → O(n)
+- **`lista_insertar`** → O(n), donde _n_ depende de la posición
 
-- **`lista_eliminar_elemento`** → O(n)
+- **`lista_eliminar_elemento`** → O(n), donde _n_ depende de la posición
 
-- **`lista_buscar_posicion`** → O(n)
+- **`lista_buscar_posicion`** → O(n), donde _n_ depende de la posición
 
-- **`lista_buscar_elemento`** → O(n)
+- **`lista_buscar_elemento`** → O(n), donde _n_ depende de la posición
 
-- **`lista_con_cada_elemento`** → O(n)
+- **`lista_con_cada_elemento`** → O(n), donde _n_ es la cantidad de elementos.
 
-- **`lista_destruir_todo`** → O(n)
+- **`lista_destruir_todo`** → O(n) , donde _n_ es la cantidad de elementos.
 
-- **`lista_destruir`** → O(n)
+- **`lista_destruir`** → O(n), donde _n_ es la cantidad de elementos.
 
 - **`lista_iterador_crear`** → O(1)
 
@@ -322,7 +323,7 @@ Funciones típicas:
 
 - **`pila_cantidad`** → O(1)
 
-- **`pila_destruir`** → O(n)
+- **`pila_destruir`** → O(n), donde _n_ es la cantidad de elementos.
 
 - **`cola_crear`** → O(1)
 
@@ -334,4 +335,4 @@ Funciones típicas:
 
 - **`cola_cantidad`** → O(1)
 
-- **`cola_destruir`** → O(n)
+- **`cola_destruir`** → O(n), donde _n_ es la cantidad de elementos.

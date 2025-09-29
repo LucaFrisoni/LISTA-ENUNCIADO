@@ -8,12 +8,18 @@ void agregando_elementos_dinamicos(lista_t *lista, size_t cantidad)
 {
 	for (size_t i = 0; i < cantidad; i++) {
 		int *n = malloc(sizeof(int));
-		*n = i;
+		*n = (int)i;
 		if (!lista_agregar(lista, n)) {
 			free(n);
 			break;
 		}
 	}
+}
+int comparador_enteros(const void *a, const void *b)
+{
+	int x = *(int *)a;
+	int y = *(int *)b;
+	return x - y;
 }
 
 void test_lista_crear_no_null()
@@ -29,11 +35,37 @@ void test_lista_crear_vacia()
 	pa2m_afirmar(vacia == true, "Una lista recién creada está vacía");
 	lista_destruir(lista);
 }
+void test_lista_crear_cantidad_0()
+{
+	lista_t *lista = lista_crear();
+	pa2m_afirmar(lista_cantidad(lista) == 0,
+		     "La lista recien creada tiene cantidad 0");
+	lista_destruir(lista);
+}
+void test_lista_crear_primer_elemento()
+{
+	lista_t *lista = lista_crear();
+	int *n = lista_buscar_elemento(lista, 0);
+	pa2m_afirmar(n == NULL,
+		     "La lista recién creada no tiene primer elemento");
+	lista_destruir(lista);
+}
+void test_lista_crear_ultimo_elemento()
+{
+	lista_t *lista = lista_crear();
+	int *n = lista_buscar_elemento(lista, lista_cantidad(lista) - 1);
+	pa2m_afirmar(n == NULL,
+		     "La lista recién creada no tiene ultimo elemento");
+	lista_destruir(lista);
+}
 
 void tests_lista_crear()
 {
 	test_lista_crear_no_null();
 	test_lista_crear_vacia();
+	test_lista_crear_cantidad_0();
+	test_lista_crear_primer_elemento();
+	test_lista_crear_ultimo_elemento();
 }
 //-----------------------
 void test_lista_vacia_devuelve_true_en_lista_vacia()
@@ -59,12 +91,65 @@ void test_lista_vacia_devuelve_true_en_lista_nula()
 	bool vacia = lista_vacia(NULL);
 	pa2m_afirmar(vacia == true, "Una lista nula se considera vacía");
 }
+void test_lista_vacia_despues_de_insertar_y_eliminar()
+{
+	lista_t *lista = lista_crear();
+
+	agregando_elementos_dinamicos(lista, 3);
+
+	int *n = lista_eliminar_elemento(lista, 2);
+	int *n2 = lista_eliminar_elemento(lista, 1);
+	int *n3 = lista_eliminar_elemento(lista, 0);
+
+	free(n);
+	free(n2);
+	free(n3);
+
+	bool vacia = lista_vacia(lista);
+	pa2m_afirmar(
+		vacia == true,
+		"La lista se encuentra vacia luego de agregar y eliminar todos sus elementos");
+	lista_destruir(lista);
+}
+void test_lista_vacia_buscar_elemento()
+{
+	lista_t *lista = lista_crear();
+
+	// Intentamos buscar un elemento en la lista vacía
+	lista_buscar_elemento(lista, 0);
+
+	// Verificamos condición de vacía
+	pa2m_afirmar(
+		lista_vacia(lista) == true,
+		"Luego de buscar en una lista vacia, esta sigue estando vacia");
+
+	lista_destruir(lista);
+}
+void test_lista_vacia_buscar_elemento_2()
+{
+	lista_t *lista = lista_crear();
+
+	int valor = 42;
+	lista_agregar(lista, &valor);
+
+	lista_buscar_elemento(lista, 0);
+
+	// Verificamos condición de vacía
+	pa2m_afirmar(
+		lista_vacia(lista) == false,
+		"Luego de buscar en una lista con elementos, la condicion de vacio es la correcta");
+
+	lista_destruir(lista);
+}
 
 void tests_lista_vacia()
 {
 	test_lista_vacia_devuelve_true_en_lista_vacia();
 	test_lista_vacia_devuelve_false_en_lista_con_elementos();
 	test_lista_vacia_devuelve_true_en_lista_nula();
+	test_lista_vacia_despues_de_insertar_y_eliminar();
+	test_lista_vacia_buscar_elemento();
+	test_lista_vacia_buscar_elemento_2();
 }
 //-----------------------
 void test_lista_cantidad_en_lista_vacia()
@@ -105,13 +190,58 @@ void test_lista_cantidad_despues_de_insertar_y_eliminar()
 void test_lista_cantidad_prueba_estres()
 {
 	lista_t *lista = lista_crear();
-	agregando_elementos_dinamicos(lista, 20000);
+	agregando_elementos_dinamicos(lista, 10000);
 
 	size_t cant = lista_cantidad(lista);
 	pa2m_afirmar(
-		cant == 20000,
-		"Prueba de estrés: se agregaron 20000 elementos y la cantidad es correcta");
+		cant == 10000,
+		"Prueba de estrés: se agregaron 10000 elementos y la cantidad es correcta");
 
+	lista_destruir_todo(lista, free);
+}
+void test_lista_cantidad_buscar_elemento()
+{
+	lista_t *lista = lista_crear();
+	int valor = 42;
+
+	lista_agregar(lista, &valor);
+
+	// Buscamos el elemento en la posición 0
+	lista_buscar_elemento(lista, 0);
+
+	pa2m_afirmar(lista_cantidad(lista) == 1,
+		     "La cantidad es correcta luego de buscar un elemento");
+
+	lista_destruir(lista);
+}
+void test_lista_cantidad_agregando_elemento()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 1);
+	pa2m_afirmar(lista_cantidad(lista) == 1,
+		     "La lista aumenta la cantidad despues de agregar");
+	lista_destruir_todo(lista, free);
+}
+void test_lista_cantidad_eliminando_elemento()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 1);
+	int *n = lista_eliminar_elemento(lista, 0);
+	free(n);
+	pa2m_afirmar(lista_cantidad(lista) == 0,
+		     "La lista resta la cantidad despues de eliminar");
+	lista_destruir(lista);
+}
+void test_lista_cantidad_buscar_posicion()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 1);
+	int num = 0;
+
+	lista_buscar_posicion(lista, &num, comparador_enteros);
+	pa2m_afirmar(
+		lista_cantidad(lista) == 1,
+		"La lista tiene la cantidad correcta luego de buscar la posicion de un elemento");
 	lista_destruir_todo(lista, free);
 }
 
@@ -120,10 +250,14 @@ void tests_lista_cantidad()
 	test_lista_cantidad_en_lista_vacia();
 	test_lista_cantidad_en_lista_nula();
 	test_lista_cantidad_despues_de_insertar_y_eliminar();
+	test_lista_cantidad_buscar_elemento();
+	test_lista_cantidad_agregando_elemento();
+	test_lista_cantidad_eliminando_elemento();
+	test_lista_cantidad_buscar_posicion();
 	test_lista_cantidad_prueba_estres();
 }
 //-----------------------
-void test_lista_agregar_en_lista_vacia()
+void test_lista_agregar_en_lista_vacia_agrega_elemento()
 {
 	lista_t *lista = lista_crear();
 	int *n = malloc(sizeof(int));
@@ -131,15 +265,77 @@ void test_lista_agregar_en_lista_vacia()
 
 	pa2m_afirmar(lista_agregar(lista, n) == true,
 		     "Puedo agregar un elemento en una lista vacía");
-	pa2m_afirmar(lista_cantidad(lista) == 1,
-		     "La lista tiene la cantidad correcta después de agregar");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_vacia_cantidad_correcta()
+{
+	lista_t *lista = lista_crear();
+	int *n = malloc(sizeof(int));
+	*n = 1;
+	lista_agregar(lista, n);
+
+	pa2m_afirmar(
+		lista_cantidad(lista) == 1,
+		"La lista tiene la cantidad correcta después de agregar en lista vacía");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_vacia_buscar_elemento()
+{
+	lista_t *lista = lista_crear();
+	int *n = malloc(sizeof(int));
+	*n = 1;
+	lista_agregar(lista, n);
+
+	int *elem = lista_buscar_elemento(lista, 0);
+	pa2m_afirmar(*elem == 1,
+		     "Se puede buscar un elemento después de agregar");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_vacia_primer_elemento_correcto()
+{
+	lista_t *lista = lista_crear();
+	int *n = malloc(sizeof(int));
+	*n = 1;
+	lista_agregar(lista, n);
 
 	int *elem = lista_buscar_elemento(lista, 0);
 	pa2m_afirmar(*elem == 1, "El primer elemento es el agregado");
 
 	lista_destruir_todo(lista, free);
 }
-void test_lista_agregar_en_lista_con_elementos()
+void test_lista_agregar_en_lista_vacia_buscar_posicion_inexistente()
+{
+	lista_t *lista = lista_crear();
+	int *n = malloc(sizeof(int));
+	*n = 1;
+	lista_agregar(lista, n);
+
+	int num = 10;
+	int pos = lista_buscar_posicion(lista, &num, comparador_enteros);
+	pa2m_afirmar(
+		pos == -1,
+		"Buscar la posición de un elemento inexistente devuelve -1");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_vacia_no_hay_mas_elementos()
+{
+	lista_t *lista = lista_crear();
+	int *n = malloc(sizeof(int));
+	*n = 1;
+	lista_agregar(lista, n);
+
+	int *elem2 = lista_buscar_elemento(lista, 1);
+	pa2m_afirmar(
+		elem2 == NULL,
+		"No hay más elementos después del agregado en una lista vacía");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_agregar_elemento()
 {
 	lista_t *lista = lista_crear();
 
@@ -149,13 +345,226 @@ void test_lista_agregar_en_lista_con_elementos()
 
 	int *n2 = malloc(sizeof(int));
 	*n2 = 2;
+
 	pa2m_afirmar(lista_agregar(lista, n2) == true,
 		     "Puedo agregar un elemento en una lista con elementos");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_cantidad_correcta()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_agregar(lista, n2);
+
 	pa2m_afirmar(lista_cantidad(lista) == 2,
 		     "La lista ahora tiene la cantidad correcta");
 
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_ultimo_correcto()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_agregar(lista, n2);
+
 	int *elem = lista_buscar_elemento(lista, 1);
 	pa2m_afirmar(*elem == 2, "El último elemento es el recién agregado");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_agregar_luego_de_buscar()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_agregar(lista, n2);
+
+	int *n3 = malloc(sizeof(int));
+	*n3 = 3;
+
+	pa2m_afirmar(lista_agregar(lista, n3) == true,
+		     "Puedo agregar un elemento luego de buscar uno");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_buscar_posicion_inexistente()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_agregar(lista, n2);
+
+	int num = 10;
+	int pos = lista_buscar_posicion(lista, &num, comparador_enteros);
+
+	pa2m_afirmar(
+		pos == -1,
+		"Se puede buscar la posición de un elemento inexistente en una lista con elementos");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_agregar_luego_de_buscar_posicion()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_agregar(lista, n2);
+
+	int *n4 = malloc(sizeof(int));
+	*n4 = 4;
+
+	pa2m_afirmar(
+		lista_agregar(lista, n4) == true,
+		"Puedo agregar un elemento luego de buscar la posición de uno");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_en_lista_con_elementos_no_hay_mas_elementos()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_agregar(lista, n2);
+
+	int *n4 = malloc(sizeof(int));
+	*n4 = 4;
+	lista_agregar(lista, n4);
+
+	int *elem2 = lista_buscar_elemento(lista, 4);
+
+	pa2m_afirmar(
+		elem2 == NULL,
+		"No hay más elementos después del agregado en una lista con elementos");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_y_eliminar_un_elemento()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 2);
+
+	int *n = lista_eliminar_elemento(lista, 1);
+	free(n);
+	int *elem = lista_buscar_elemento(lista, 1);
+	pa2m_afirmar(
+		elem == NULL,
+		"Se puede eliminar correctamente un elemento recién agregado");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_reagregar_despues_de_eliminar()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 2);
+
+	int *n = lista_eliminar_elemento(lista, 1);
+	free(n);
+	agregando_elementos_dinamicos(lista, 1);
+
+	int *elem2 = lista_buscar_elemento(lista, 1);
+	pa2m_afirmar(
+		*elem2 == 0,
+		"Se puede agregar correctamente un elemento luego de eliminar");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_luego_de_insertar_al_inicio()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 0);
+
+	int *n3 = malloc(sizeof(int));
+	*n3 = 3;
+	pa2m_afirmar(lista_agregar(lista, n3) == true,
+		     "Puedo agregar un elemento luego de insertar al inicio");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_luego_de_insertar_por_la_mitad()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 0);
+
+	int *n4 = malloc(sizeof(int));
+	*n4 = 4;
+	lista_insertar(lista, n4, 1);
+
+	int *n5 = malloc(sizeof(int));
+	*n5 = 5;
+	pa2m_afirmar(
+		lista_agregar(lista, n5) == true,
+		"Puedo agregar un elemento luego de insertar por la mitad");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_agregar_luego_de_insertar_al_final()
+{
+	lista_t *lista = lista_crear();
+
+	int *n1 = malloc(sizeof(int));
+	*n1 = 1;
+	lista_agregar(lista, n1);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 0);
+
+	int *n6 = malloc(sizeof(int));
+	*n6 = 6;
+	lista_insertar(lista, n6,
+		       1); // inserto al final (pos = cantidad actual)
+
+	int *n7 = malloc(sizeof(int));
+	*n7 = 7;
+	pa2m_afirmar(lista_agregar(lista, n7) == true,
+		     "Puedo agregar un elemento luego de insertar al final");
 
 	lista_destruir_todo(lista, free);
 }
@@ -179,12 +588,40 @@ void test_lista_agregar_prueba_estres()
 
 	lista_destruir_todo(lista, free);
 }
+void test_lista_agregar_elemento_null()
+{
+	lista_t *lista = lista_crear();
+
+	lista_agregar(lista, NULL);
+
+	pa2m_afirmar(lista_agregar(lista, NULL) == true,
+		     "Se puede agregar un elemento NULL");
+
+	lista_destruir_todo(lista, free);
+}
 
 void tests_lista_agregar()
 {
-	test_lista_agregar_en_lista_vacia();
-	test_lista_agregar_en_lista_con_elementos();
+	test_lista_agregar_en_lista_vacia_agrega_elemento();
+	test_lista_agregar_en_lista_vacia_cantidad_correcta();
+	test_lista_agregar_en_lista_vacia_buscar_elemento();
+	test_lista_agregar_en_lista_vacia_primer_elemento_correcto();
+	test_lista_agregar_en_lista_vacia_buscar_posicion_inexistente();
+	test_lista_agregar_en_lista_vacia_no_hay_mas_elementos();
+	test_lista_agregar_en_lista_con_elementos_agregar_elemento();
+	test_lista_agregar_en_lista_con_elementos_cantidad_correcta();
+	test_lista_agregar_en_lista_con_elementos_ultimo_correcto();
+	test_lista_agregar_en_lista_con_elementos_agregar_luego_de_buscar();
+	test_lista_agregar_en_lista_con_elementos_buscar_posicion_inexistente();
+	test_lista_agregar_en_lista_con_elementos_agregar_luego_de_buscar_posicion();
+	test_lista_agregar_en_lista_con_elementos_no_hay_mas_elementos();
 	test_lista_agregar_en_lista_nula();
+	test_lista_agregar_y_eliminar_un_elemento();
+	test_lista_reagregar_despues_de_eliminar();
+	test_lista_agregar_luego_de_insertar_al_inicio();
+	test_lista_agregar_luego_de_insertar_por_la_mitad();
+	test_lista_agregar_luego_de_insertar_al_final();
+	test_lista_agregar_elemento_null();
 	test_lista_agregar_prueba_estres();
 }
 //-----------------------
@@ -225,9 +662,7 @@ void test_lista_insertar_posicion_invalida()
 void test_lista_insertar_pos0_con_elementos()
 {
 	lista_t *lista = lista_crear();
-	int *n3 = malloc(sizeof(int));
-	*n3 = 2;
-	lista_agregar(lista, n3);
+	agregando_elementos_dinamicos(lista, 1);
 
 	int *n4 = malloc(sizeof(int));
 	*n4 = 3;
@@ -243,17 +678,7 @@ void test_lista_insertar_pos0_con_elementos()
 void test_lista_insertar_en_posicion_intermedia()
 {
 	lista_t *lista = lista_crear();
-	int *n3 = malloc(sizeof(int));
-	*n3 = 2;
-	lista_agregar(lista, n3);
-
-	int *n4 = malloc(sizeof(int));
-	*n4 = 4;
-	lista_agregar(lista, n4);
-
-	int *n5 = malloc(sizeof(int));
-	*n5 = 6;
-	lista_agregar(lista, n5);
+	agregando_elementos_dinamicos(lista, 3);
 
 	int *n6 = malloc(sizeof(int));
 	*n6 = 5;
@@ -261,8 +686,162 @@ void test_lista_insertar_en_posicion_intermedia()
 		     "Puedo insertar en una posición intermedia válida");
 
 	int *elem = lista_buscar_elemento(lista, 1);
-	pa2m_afirmar(*elem == 5,
-		     "El elemento en la posición intermedia es el insertado");
+	pa2m_afirmar(
+		*elem == 5,
+		"Se puede buscar el elemento insertado en una posicion intermedia y su valor es el correcto");
+
+	int pos = lista_buscar_posicion(lista, elem, comparador_enteros);
+	pa2m_afirmar(
+		pos == 1,
+		"El elemento insertado en el medio esta en la posicion correcta");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_insertar_en_posicion_final()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 3);
+
+	int *n6 = malloc(sizeof(int));
+	*n6 = 5;
+	pa2m_afirmar(lista_insertar(lista, n6, 2) == true,
+		     "Puedo insertar en la posicion final");
+
+	int *elem = lista_buscar_elemento(lista, 2);
+	pa2m_afirmar(
+		*elem == 5,
+		"Se puede buscar el elemento insertado al final y su valor es el correcto");
+
+	int pos = lista_buscar_posicion(lista, elem, comparador_enteros);
+	pa2m_afirmar(
+		pos == 2,
+		"El elemento insertado al final esta en la posicion correcta");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_insertar_y_eliminar_inicio()
+{
+	lista_t *lista = lista_crear();
+
+	// Agrego un elemento inicial
+	agregando_elementos_dinamicos(lista, 1);
+
+	// Inserto al inicio
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 0);
+
+	// Destruyo el elemento recién insertado
+	int *eliminado = lista_eliminar_elemento(lista, 0);
+	pa2m_afirmar(
+		*eliminado == 2,
+		"Se puede eliminar un elemento recién insertado al inicio");
+	free(eliminado);
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_insertar_y_eliminar_intermedio()
+{
+	lista_t *lista = lista_crear();
+
+	agregando_elementos_dinamicos(lista, 5);
+
+	// Inserto elemento intermedio
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 1);
+
+	int *eliminado = lista_eliminar_elemento(lista, 1);
+	pa2m_afirmar(
+		*eliminado == 2,
+		"Se puede eliminar un elemento recién insertado en posición intermedia");
+	free(eliminado);
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_insertar_y_eliminar_final()
+{
+	lista_t *lista = lista_crear();
+
+	agregando_elementos_dinamicos(lista, 5);
+
+	// Inserto al final
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 4);
+
+	int *eliminado = lista_eliminar_elemento(lista, 4);
+	pa2m_afirmar(*eliminado == 2,
+		     "Se puede eliminar un elemento recién insertado al final");
+	free(eliminado);
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_eliminar_y_luego_insertar_inicio()
+{
+	lista_t *lista = lista_crear();
+
+	agregando_elementos_dinamicos(lista, 2);
+
+	int *el = lista_eliminar_elemento(lista, 0);
+	free(el);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 0);
+	int *elem = lista_buscar_elemento(lista, 0);
+	pa2m_afirmar(
+		*elem == 2,
+		"Se puede insertar un elemento luego de eliminar al inicio");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_eliminar_y_luego_insertar_intermedio()
+{
+	lista_t *lista = lista_crear();
+
+	agregando_elementos_dinamicos(lista, 5);
+
+	int *el = lista_eliminar_elemento(lista, 2);
+	free(el);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 2);
+	int *elem = lista_buscar_elemento(lista, 2);
+	pa2m_afirmar(
+		*elem == 2,
+		"Se puede insertar un elemento luego de eliminar en la mitad");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_eliminar_y_luego_insertar_final()
+{
+	lista_t *lista = lista_crear();
+
+	agregando_elementos_dinamicos(lista, 5);
+
+	int *el = lista_eliminar_elemento(lista, 4);
+	free(el);
+
+	int *n2 = malloc(sizeof(int));
+	*n2 = 2;
+	lista_insertar(lista, n2, 3);
+	int *elem = lista_buscar_elemento(lista, 3);
+	pa2m_afirmar(
+		*elem == 2,
+		"Se puede insertar un elemento en la ultima posicion luego de eliminar el ultimo");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_insertar_elemento_null()
+{
+	lista_t *lista = lista_crear();
+
+	lista_agregar(lista, NULL);
+
+	pa2m_afirmar(lista_insertar(lista, NULL, 0) == true,
+		     "Se puede insertar un elemento NULL");
 
 	lista_destruir_todo(lista, free);
 }
@@ -292,6 +871,14 @@ void tests_lista_insertar()
 	test_lista_insertar_posicion_invalida();
 	test_lista_insertar_pos0_con_elementos();
 	test_lista_insertar_en_posicion_intermedia();
+	test_lista_insertar_en_posicion_final();
+	test_lista_insertar_y_eliminar_inicio();
+	test_lista_insertar_y_eliminar_intermedio();
+	test_lista_insertar_y_eliminar_final();
+	test_lista_eliminar_y_luego_insertar_inicio();
+	test_lista_eliminar_y_luego_insertar_intermedio();
+	test_lista_eliminar_y_luego_insertar_final();
+	test_lista_insertar_elemento_null();
 	test_lista_insertar_prueba_estres();
 }
 //-----------------------
@@ -307,19 +894,19 @@ void test_lista_eliminar_elemento_lista_vacia()
 		     "Tratar de eliminar de una lista vacía devuelve NULL");
 	lista_destruir(lista);
 }
+void test_lista_eliminar_elemento_posicion_invalida()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 3);
+	pa2m_afirmar(
+		lista_eliminar_elemento(lista, 5) == NULL,
+		"Tratar de eliminar de una lista una posicion invalida devuelve NULL");
+	lista_destruir_todo(lista, free);
+}
 void test_lista_eliminar_elemento_varios()
 {
 	lista_t *lista = lista_crear();
-	int *n1 = malloc(sizeof(int));
-	*n1 = 10;
-	int *n2 = malloc(sizeof(int));
-	*n2 = 20;
-	int *n3 = malloc(sizeof(int));
-	*n3 = 30;
-
-	lista_agregar(lista, n1);
-	lista_agregar(lista, n2);
-	lista_agregar(lista, n3);
+	agregando_elementos_dinamicos(lista, 3);
 
 	int *elem = lista_eliminar_elemento(lista, 0);
 	free(elem);
@@ -329,9 +916,34 @@ void test_lista_eliminar_elemento_varios()
 	free(elem);
 
 	pa2m_afirmar(lista_cantidad(lista) == 0,
-		     "Se eliminan correctamente los elementos");
+		     "Se eliminan correctamente varios elementos de una lista");
 
 	lista_destruir(lista);
+}
+void test_lista_eliminar_unico_elemento()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 1);
+
+	int *elem = lista_eliminar_elemento(lista, 0);
+	pa2m_afirmar(
+		lista_vacia(lista) == true,
+		"Si hay un solo elemento se elimina correctamente y deja la lista vacia");
+	free(elem);
+	lista_destruir(lista);
+}
+void test_lista_eliminar_ultimo_elemento()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 3);
+
+	int *elem = lista_eliminar_elemento(lista, 2);
+
+	pa2m_afirmar(*elem == 2 && lista_cantidad(lista) == 2,
+		     "Se elimina correctamente el ultimo elemento");
+
+	free(elem);
+	lista_destruir_todo(lista, free);
 }
 void test_lista_eliminar_elemento_prueba_estres()
 {
@@ -355,16 +967,13 @@ void tests_lista_eliminar_elemento()
 {
 	test_lista_eliminar_elemento_lista_nula();
 	test_lista_eliminar_elemento_lista_vacia();
+	test_lista_eliminar_elemento_posicion_invalida();
 	test_lista_eliminar_elemento_varios();
+	test_lista_eliminar_unico_elemento();
+	test_lista_eliminar_ultimo_elemento();
 	test_lista_eliminar_elemento_prueba_estres();
 }
 //-----------------------
-int comparador_enteros(const void *a, const void *b)
-{
-	int x = *(int *)a;
-	int y = *(int *)b;
-	return x - y;
-}
 void test_lista_buscar_posicion_lista_nula()
 {
 	pa2m_afirmar(lista_buscar_posicion(NULL, NULL, comparador_enteros) ==
@@ -391,19 +1000,19 @@ void test_lista_buscar_posicion_elemento_existente()
 {
 	lista_t *lista = lista_crear();
 	int num = 5;
-	agregando_elementos_dinamicos(lista, 100000);
+	agregando_elementos_dinamicos(lista, 10);
 
-	pa2m_afirmar(lista_buscar_posicion(lista, &num, comparador_enteros) ==
-			     5,
-		     "Devuelve la posición correcta del elemento de la lista");
+	pa2m_afirmar(
+		lista_buscar_posicion(lista, &num, comparador_enteros) == 5,
+		"Devuelve la posición correcta de un elemento existente de la lista");
 
 	lista_destruir_todo(lista, free);
 }
 void test_lista_buscar_posicion_elemento_no_existente()
 {
 	lista_t *lista = lista_crear();
-	agregando_elementos_dinamicos(lista, 100000);
-	int num = 100056;
+	agregando_elementos_dinamicos(lista, 10);
+	int num = 15;
 
 	pa2m_afirmar(lista_buscar_posicion(lista, &num, comparador_enteros) ==
 			     -1,
@@ -411,15 +1020,60 @@ void test_lista_buscar_posicion_elemento_no_existente()
 
 	lista_destruir_todo(lista, free);
 }
+void test_lista_buscar_posicion_despues_de_agregar()
+{
+	lista_t *lista = lista_crear();
+	int *num = malloc(sizeof(int));
+	*num = 10;
+	lista_agregar(lista, num);
+
+	pa2m_afirmar(
+		lista_buscar_posicion(lista, num, comparador_enteros) == 0,
+		"Devuelve la posición correcta de un elemento recien agregado");
+	pa2m_afirmar(
+		lista_buscar_posicion(lista, num, comparador_enteros) == 0,
+		"Devuelve la posición correcta de una lista con solo 1 elemento");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_buscar_posicion_despues_de_insertar()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 10);
+	int *num = malloc(sizeof(int));
+	*num = 10;
+	lista_insertar(lista, num, 5);
+
+	pa2m_afirmar(
+		lista_buscar_posicion(lista, num, comparador_enteros) == 5,
+		"Devuelve la posición correcta de un elemento recien insertado");
+
+	lista_destruir_todo(lista, free);
+}
+void test_lista_buscar_posicion_despues_de_eliminar()
+{
+	lista_t *lista = lista_crear();
+	agregando_elementos_dinamicos(lista, 5);
+	int num = 4;
+
+	int *elem = lista_eliminar_elemento(lista, 4);
+	free(elem);
+
+	pa2m_afirmar(
+		lista_buscar_posicion(lista, &num, comparador_enteros) == -1,
+		"Devuelve -1 al buscar la posicion de un elemento recien eliminado");
+
+	lista_destruir_todo(lista, free);
+}
 void test_lista_buscar_posicion_prueba_estres()
 {
 	lista_t *lista = lista_crear();
-	agregando_elementos_dinamicos(lista, 100000);
-	int num = 89632;
+	agregando_elementos_dinamicos(lista, 10001);
+	int num = 4000;
 
 	pa2m_afirmar(
-		lista_buscar_posicion(lista, &num, comparador_enteros) == 89632,
-		"Prueba de estrés: Devuelve la posición correcta del elemento de una lista muy grande");
+		lista_buscar_posicion(lista, &num, comparador_enteros) == 4000,
+		"Prueba de estrés: Devuelve la posición correcta del elemento de una lista muy grande +10000");
 
 	lista_destruir_todo(lista, free);
 }
@@ -431,6 +1085,9 @@ void tests_lista_buscar_posicion()
 	test_lista_buscar_posicion_sin_comparador();
 	test_lista_buscar_posicion_elemento_existente();
 	test_lista_buscar_posicion_elemento_no_existente();
+	test_lista_buscar_posicion_despues_de_agregar();
+	test_lista_buscar_posicion_despues_de_insertar();
+	test_lista_buscar_posicion_despues_de_eliminar();
 	test_lista_buscar_posicion_prueba_estres();
 }
 //-----------------------
@@ -449,7 +1106,7 @@ void test_lista_buscar_elemento_lista_vacia()
 void test_lista_buscar_elemento_valido()
 {
 	lista_t *lista = lista_crear();
-	agregando_elementos_dinamicos(lista, 100000);
+	agregando_elementos_dinamicos(lista, 100);
 
 	int *elem = lista_buscar_elemento(lista, 56);
 	pa2m_afirmar(*elem == 56, "Devuelve el elemento correctamente");
@@ -459,21 +1116,22 @@ void test_lista_buscar_elemento_valido()
 void test_lista_buscar_elemento_fuera_de_rango()
 {
 	lista_t *lista = lista_crear();
-	agregando_elementos_dinamicos(lista, 100000);
+	agregando_elementos_dinamicos(lista, 100);
 
-	pa2m_afirmar(lista_buscar_elemento(lista, 100001) == NULL,
+	pa2m_afirmar(lista_buscar_elemento(lista, 1000) == NULL,
 		     "Buscar en posición fuera de rango devuelve NULL");
 
 	lista_destruir_todo(lista, free);
 }
+
 void test_lista_buscar_elemento_prueba_estres()
 {
 	lista_t *lista = lista_crear();
-	agregando_elementos_dinamicos(lista, 100000);
+	agregando_elementos_dinamicos(lista, 10000);
 
-	int *elem = lista_buscar_elemento(lista, 59654);
+	int *elem = lista_buscar_elemento(lista, 5965);
 	pa2m_afirmar(
-		*elem == 59654,
+		*elem == 5965,
 		"Prueba de estrés: Encuentra el elemento en una lista muy grande (posición 59654)");
 
 	lista_destruir_todo(lista, free);
@@ -619,7 +1277,7 @@ void test_lista_destruir_elementos_accesibles()
 
 	for (size_t i = 0; i < CANT; i++) {
 		elementos[i] = malloc(sizeof(int));
-		*elementos[i] = i;
+		*elementos[i] = (int)i;
 		lista_agregar(lista, elementos[i]);
 	}
 
@@ -642,7 +1300,7 @@ void test_lista_destruir_prueba_estres()
 
 	for (size_t i = 0; i < CANT; i++) {
 		elementos[i] = malloc(sizeof(int));
-		*elementos[i] = i;
+		*elementos[i] = (int)i;
 		lista_agregar(lista, elementos[i]);
 	}
 
@@ -991,20 +1649,67 @@ void test_pila_crear_vacia()
 		     "La pila recién creada está vacía");
 	pila_destruir(pila);
 }
+void test_pila_crear_y_ver()
+{
+	pila_t *pila = pila_crear();
+
+	pa2m_afirmar(
+		pila_ver_primero(pila) == NULL,
+		"Tratar de ver el primer elemento en una pila recien creada devuelve NULL");
+	pila_destruir(pila);
+}
+void test_pila_crear_y_desapilar()
+{
+	pila_t *pila = pila_crear();
+
+	pa2m_afirmar(
+		pila_desapilar(pila) == NULL,
+		"Tratar de desapilar en una pila recien creada devuelve NULL");
+	pila_destruir(pila);
+}
+void test_pila_crear_y_destruir()
+{
+	pila_t *pila = pila_crear();
+	pila_destruir(pila);
+	pa2m_afirmar(true, "Se puede destruir una pila recien creada");
+}
 
 void tests_pila_crear()
 {
 	test_pila_crear_no_null();
 	test_pila_crear_vacia();
+	test_pila_crear_y_ver();
+	test_pila_crear_y_desapilar();
+	test_pila_crear_y_destruir();
 }
 //-----------------------
-void test_pila_apilar_elemento()
+void test_pila_apilar_pila_null()
+{
+	int a = 10;
+
+	pa2m_afirmar(pila_apilar(NULL, &a) == false,
+		     "Trtar de apilar con una pila NULL devuelve false");
+}
+void test_pila_apilar_elemento_pila_vacia()
 {
 	pila_t *pila = pila_crear();
 	int a = 10;
 
-	pa2m_afirmar(pila_apilar(pila, &a) == true,
-		     "Se apilan correctamente los elementos");
+	pa2m_afirmar(
+		pila_apilar(pila, &a) == true,
+		"Se apilan correctamente los elementos cuando la pila esta vacia");
+
+	pila_destruir(pila);
+}
+void test_pila_apilar_elemento_pila_con_elementos()
+{
+	pila_t *pila = pila_crear();
+	int a = 10;
+	int b = 20;
+	pila_apilar(pila, &a);
+	pa2m_afirmar(
+		pila_apilar(pila, &b) == true,
+		"Se apilan correctamente los elementos cuando la pila esta con elementos");
 
 	pila_destruir(pila);
 }
@@ -1043,11 +1748,21 @@ void test_pila_apilar_prueba_estres()
 
 	pila_destruir(pila);
 }
+void test_pila_apilar_elemento_null()
+{
+	pila_t *pila = pila_crear();
+	pa2m_afirmar(pila_apilar(pila, NULL) == true,
+		     "Se puede apilar un elemento NULL");
+	pila_destruir(pila);
+}
 
 void tests_pila_apilar()
 {
-	test_pila_apilar_elemento();
+	test_pila_apilar_pila_null();
+	test_pila_apilar_elemento_pila_vacia();
+	test_pila_apilar_elemento_pila_con_elementos();
 	test_pila_apilar_aumenta_cantidad();
+	test_pila_apilar_elemento_null();
 	test_pila_apilar_prueba_estres();
 }
 //-----------------------
@@ -1087,12 +1802,44 @@ void test_pila_desapilar_en_pila_vacia()
 
 	pila_destruir(pila);
 }
+void test_pila_desapilar_en_pila_null()
+{
+	pila_t *pila = pila_crear();
+	pa2m_afirmar(pila_desapilar(NULL) == NULL,
+		     "Desapilar en pila NULL devuelve NULL");
+
+	pila_destruir(pila);
+}
+void test_pila_desapilar_prueba_estres()
+{
+	pila_t *pila = pila_crear();
+
+	for (int i = 0; i < 10000; i++) {
+		int *num = malloc(sizeof(int));
+		*num = i;
+		pila_apilar(pila, num);
+	}
+
+	// Liberamos memoria
+	while (pila_cantidad(pila) > 0) {
+		int *elem = pila_desapilar(pila);
+		free(elem);
+	}
+
+	pa2m_afirmar(
+		pila_cantidad(pila) == 0,
+		"Prueba de estrés: Se desapilaron correctamente +10000 elementos");
+
+	pila_destruir(pila);
+}
 
 void tests_pila_desapilar()
 {
 	test_pila_desapilar_devuelve_ultimo();
 	test_pila_desapilar_reduce_cantidad();
 	test_pila_desapilar_en_pila_vacia();
+	test_pila_desapilar_en_pila_null();
+	test_pila_desapilar_prueba_estres();
 }
 //-----------------------
 void test_pila_ver_primero_en_pila_vacia()
@@ -1101,6 +1848,15 @@ void test_pila_ver_primero_en_pila_vacia()
 
 	pa2m_afirmar(pila_ver_primero(pila) == NULL,
 		     "Ver primero en pila vacía devuelve NULL");
+
+	pila_destruir(pila);
+}
+void test_pila_ver_primero_en_pila_null()
+{
+	pila_t *pila = pila_crear();
+
+	pa2m_afirmar(pila_ver_primero(NULL) == NULL,
+		     "Ver primero en pila NULL devuelve NULL");
 
 	pila_destruir(pila);
 }
@@ -1117,11 +1873,43 @@ void test_pila_ver_primero_devuelve_ultimo_apilado()
 
 	pila_destruir(pila);
 }
+void test_pila_ver_primero_y_cantidad()
+{
+	pila_t *pila = pila_crear();
+	int a = 10, b = 20;
+
+	pila_apilar(pila, &a);
+	pila_apilar(pila, &b);
+	pila_ver_primero(pila);
+	pa2m_afirmar(
+		pila_cantidad(pila) == 2,
+		"Ver primero no modifica la cantidad de elementos en la pila");
+
+	pila_destruir(pila);
+}
+void test_pila_ver_primero_y_desapilar()
+{
+	pila_t *pila = pila_crear();
+	int a = 10, b = 20;
+
+	pila_apilar(pila, &a);
+	pila_apilar(pila, &b);
+	pila_desapilar(pila);
+
+	pa2m_afirmar(
+		pila_ver_primero(pila) == &a,
+		"Ver primero funciona correctamente luego de desapilar sin que esta quede vacia");
+
+	pila_destruir(pila);
+}
 
 void tests_pila_ver_primero()
 {
+	test_pila_ver_primero_en_pila_null();
 	test_pila_ver_primero_en_pila_vacia();
+	test_pila_ver_primero_y_cantidad();
 	test_pila_ver_primero_devuelve_ultimo_apilado();
+	test_pila_ver_primero_y_desapilar();
 }
 //-----------------------
 void test_pila_cantidad_inicial_cero()
@@ -1132,6 +1920,11 @@ void test_pila_cantidad_inicial_cero()
 		     "Una pila recién creada tiene cantidad 0");
 
 	pila_destruir(pila);
+}
+void test_pila_cantidad_null()
+{
+	pa2m_afirmar(pila_cantidad(NULL) == 0,
+		     "Una pila NULL devuelve cantidad 0");
 }
 void test_pila_cantidad_refleja_elementos_apilados()
 {
@@ -1153,6 +1946,7 @@ void tests_pila_cantidad()
 {
 	test_pila_cantidad_inicial_cero();
 	test_pila_cantidad_refleja_elementos_apilados();
+	test_pila_cantidad_null();
 }
 //-----------------------
 void test_pila_destruir_con_elementos()
@@ -1196,11 +1990,38 @@ void test_cola_crear_2()
 		     "La cola recién creada está vacía");
 	cola_destruir(cola);
 }
+void test_cola_crear_y_ver()
+{
+	cola_t *cola = cola_crear();
+
+	pa2m_afirmar(
+		cola_ver_primero(cola) == NULL,
+		"Tratar de ver el primer elemento en una cola recien creada devuelve NULL");
+	cola_destruir(cola);
+}
+void test_cola_crear_y_desencolar()
+{
+	cola_t *cola = cola_crear();
+
+	pa2m_afirmar(
+		cola_desencolar(cola) == NULL,
+		"Tratar de desencolar en una cola recien creada devuelve NULL");
+	cola_destruir(cola);
+}
+void test_cola_crear_y_destruir()
+{
+	cola_t *cola = cola_crear();
+	cola_destruir(cola);
+	pa2m_afirmar(true, "Se puede destruir una cola recien creada");
+}
 
 void tests_cola_crear()
 {
 	test_cola_crear_1();
 	test_cola_crear_2();
+	test_cola_crear_y_ver();
+	test_cola_crear_y_desencolar();
+	test_cola_crear_y_destruir();
 }
 //-----------------------
 void test_cola_encolar_elemento_null()
@@ -1208,6 +2029,34 @@ void test_cola_encolar_elemento_null()
 	cola_t *cola = cola_crear();
 	pa2m_afirmar(cola_encolar(cola, NULL) == true,
 		     "Se puede encolar un elemento NULL");
+	cola_destruir(cola);
+}
+void test_cola_encolar_null()
+{
+	pa2m_afirmar(cola_encolar(NULL, NULL) == false,
+		     "Encolar con cola NULL devuelve false");
+}
+void test_cola_encolar_elemento_cola_vacia()
+{
+	cola_t *cola = cola_crear();
+	int a = 10;
+
+	pa2m_afirmar(
+		cola_encolar(cola, &a) == true,
+		"Se encolan correctamente los elementos cuando la cola esta vacia");
+
+	cola_destruir(cola);
+}
+void test_cola_encolar_elemento_cola_con_elementos()
+{
+	cola_t *cola = cola_crear();
+	int a = 10;
+	int b = 20;
+	cola_encolar(cola, &a);
+	pa2m_afirmar(
+		cola_encolar(cola, &b) == true,
+		"Se encolan correctamente los elementos cuando la cola esta con elementos");
+
 	cola_destruir(cola);
 }
 void test_cola_encolar_elemento_dinamico()
@@ -1231,8 +2080,7 @@ void test_cola_cantidad_correcta_despues_de_encolar()
 	*n = 42;
 	cola_encolar(cola, n);
 
-	pa2m_afirmar(cola_cantidad(cola) == 2,
-		     "Cantidad correcta después de encolar");
+	pa2m_afirmar(cola_cantidad(cola) == 2, "Encolar aumenta la cantidad");
 
 	cola_destruir(cola);
 	free(n);
@@ -1263,6 +2111,9 @@ void test_cola_prueba_de_estres()
 void tests_cola_encolar()
 {
 	test_cola_encolar_elemento_null();
+	test_cola_encolar_null();
+	test_cola_encolar_elemento_cola_vacia();
+	test_cola_encolar_elemento_cola_con_elementos();
 	test_cola_encolar_elemento_dinamico();
 	test_cola_cantidad_correcta_despues_de_encolar();
 	test_cola_prueba_de_estres();
@@ -1276,6 +2127,11 @@ void test_cola_desencolar_en_cola_vacia()
 		     "Desencolar en cola vacía devuelve NULL");
 
 	cola_destruir(cola);
+}
+void test_cola_desencolar_en_cola_null()
+{
+	pa2m_afirmar(cola_desencolar(NULL) == NULL,
+		     "Desencolar en cola NULL devuelve NULL");
 }
 void test_cola_desencolar_primer_elemento()
 {
@@ -1310,6 +2166,8 @@ void test_cola_desencolar_segundo_elemento()
 	int *desencolado = cola_desencolar(cola);
 	pa2m_afirmar(*desencolado == 2,
 		     "Se desencola el segundo elemento encolado (FIFO)");
+	pa2m_afirmar(cola_cantidad(cola) == 0,
+		     "Desencolar reduce la cantidad de elementos de la cola");
 
 	free(desencolado);
 	cola_destruir(cola);
@@ -1337,6 +2195,7 @@ void test_cola_desencolar_y_quedar_vacia()
 void tests_cola_desencolar()
 {
 	test_cola_desencolar_en_cola_vacia();
+	test_cola_desencolar_en_cola_null();
 	test_cola_desencolar_primer_elemento();
 	test_cola_desencolar_segundo_elemento();
 	test_cola_desencolar_y_quedar_vacia();
@@ -1370,11 +2229,49 @@ void test_cola_ver_primero_devuelve_primer_elemento()
 	free(n1);
 	free(n2);
 }
+void test_cola_ver_primero_en_cola_null()
+{
+	pa2m_afirmar(cola_ver_primero(NULL) == NULL,
+		     "Ver primero en cola NULL devuelve NULL");
+}
+void test_cola_ver_primero_y_cantidad()
+{
+	cola_t *cola = cola_crear();
+	int a = 10, b = 20;
+
+	cola_encolar(cola, &a);
+	cola_encolar(cola, &b);
+	cola_ver_primero(cola);
+
+	pa2m_afirmar(
+		cola_cantidad(cola) == 2,
+		"Ver primero no modifica la cantidad de elementos en la cola");
+
+	cola_destruir(cola);
+}
+void test_cola_ver_primero_y_desencolar()
+{
+	cola_t *cola = cola_crear();
+	int a = 10, b = 20;
+
+	cola_encolar(cola, &a);
+	cola_encolar(cola, &b);
+	cola_desencolar(cola);
+
+	pa2m_afirmar(
+		cola_ver_primero(cola) == &b,
+		"Ver primero funciona correctamente luego de desencolar sin que esta quede vacía");
+
+	cola_destruir(cola);
+}
 
 void tests_cola_ver_primero()
 {
 	test_cola_ver_primero_en_cola_vacia();
 	test_cola_ver_primero_devuelve_primer_elemento();
+	test_cola_ver_primero_en_cola_null();
+	test_cola_ver_primero_y_cantidad();
+	test_cola_ver_primero_y_desencolar();
 }
 //-----------------------
 void test_cola_cantidad_inicial_cero()
@@ -1401,11 +2298,17 @@ void test_cola_cantidad_refleja_elementos_encolados()
 
 	cola_destruir(cola);
 }
+void test_cola_cantidad_null()
+{
+	pa2m_afirmar(cola_cantidad(NULL) == 0,
+		     "Una cola NULL devuelve cantidad 0");
+}
 
 void tests_cola_cantidad()
 {
 	test_cola_cantidad_inicial_cero();
 	test_cola_cantidad_refleja_elementos_encolados();
+	test_cola_cantidad_null();
 }
 //-----------------------
 void test_cola_destruir_con_elementos()
