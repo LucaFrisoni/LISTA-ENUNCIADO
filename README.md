@@ -185,19 +185,25 @@ Se realizan **171 pruebas unitarias** que incluyen:
 Para compilar los tests:
 
 ```bash
-make compilar_t
+make compilar_t_lista
+make compilar_t_cola
+make compilar_t_pila
 ```
 
 Para ejecutar los tests:
 
 ```bash
-./tests
+./tests_lista
+./tests_cola
+./tests_pila
 ```
 
 Para ejecutar con valgrind:
 
 ```bash
-make valgrind_t
+make valgrind_t_lista
+make valgrind_t_cola
+make valgrind_t_pila
 ```
 
 ## 📚 Respuestas a las preguntas teóricas

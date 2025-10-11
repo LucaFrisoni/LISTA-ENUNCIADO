@@ -48,10 +48,9 @@ nodo_t *buscando_nodo_por_pos(lista_t *lista, size_t posicion, nodo_t **previo)
 lista_t *lista_crear()
 {
 	lista_t *lista = calloc(1, sizeof(lista_t));
-	if (!lista) {
+	if (!lista) 
 		return NULL;
-	}
-
+	
 	return lista;
 }
 //-----------------------------------------------
