@@ -40,6 +40,21 @@ bool validando_params(int argc, char *argv[])
 	}
 	return true;
 }
+
+bool validando_func(tp1_t *tp1, lista_t *lista)
+{
+	if (tp1 && !lista) {
+		tp1_destruir(tp1);
+		return false;
+	}
+	if (!tp1 && lista) {
+		lista_destruir(lista);
+		return false;
+	}
+	if (!tp1 && !lista)
+		return false;
+	return true;
+}
 // ----------------------- Callback para guardar en lista -----------------------
 bool guardar_en_lista(struct pokemon *poke, void *extra)
 {
@@ -134,7 +149,7 @@ int main(int argc, char *argv[])
 	struct pokemon *p = NULL;
 	tp1_t *tp1 = tp1_leer_archivo(argv[1]);
 	lista_t *lista_pokemones = lista_crear();
-	if (!tp1 || !lista_pokemones)
+	if (!validando_func(tp1, lista_pokemones))
 		return 0;
 
 	tp1_con_cada_pokemon(tp1, guardar_en_lista, lista_pokemones);

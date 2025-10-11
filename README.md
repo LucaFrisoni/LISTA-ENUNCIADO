@@ -282,57 +282,123 @@ Funciones típicas:
 ### 5. Complejidad computacional de las funciones (`lista_pila_cola.c`)
 
 - **`lista_crear`** → O(1)
+  La función ejecuta una cantidad constante de pasos: reserva memoria para la estructura principal y realiza verificaciones simples.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_vacia`** → O(1)
+  La función realiza comparaciones entre punteros para determinar si la lista está vacía, sin recorrer los elementos.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_cantidad`** → O(1)
+  La función accede directamente al campo cantidad de la estructura, sin realizar recorridos ni operaciones adicionales.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_agregar`** → O(1)
+  La función crea un nuevo nodo y lo agrega al final de la lista utilizando el puntero ultimo, evitando recorrer los nodos.
+  Todas las operaciones que realiza son de costo constante.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
-- **`lista_insertar`** → O(n), donde _n_ depende de la posición
+- **`lista_insertar`** → O(n)
+  La función recorre la lista hasta la posición indicada para insertar el nuevo nodo, realizando operaciones de costo constante en cada paso.
+  Si la posición es 0, la inserción se realiza en tiempo constante; pero en el peor caso (posición final), se recorren todos los nodos.
+  Por lo tanto, la complejidad es O(n), donde n depende de la posición de inserción.
 
-- **`lista_eliminar_elemento`** → O(n), donde _n_ depende de la posición
+- **`lista_eliminar_elemento`** → O(n)
+  La función recorre la lista hasta la posición indicada para eliminar el nodo correspondiente.
+  Si se elimina el primer elemento, el costo es constante, pero en el peor caso debe recorrer toda la lista.
+  Por lo tanto, la complejidad es O(n), donde n depende de la posición del elemento eliminado.
 
-- **`lista_buscar_posicion`** → O(n), donde _n_ depende de la posición
+- **`lista_buscar_posicion`** → O(n)
+  La función recorre la lista nodo a nodo comparando los elementos mediante la función comparador.
+  En el mejor caso el elemento está al principio, pero en el peor caso debe recorrer toda la lista.
+  Por lo tanto, la complejidad es O(n), donde n es la cantidad de elementos.
 
-- **`lista_buscar_elemento`** → O(n), donde _n_ depende de la posición
+- **`lista_buscar_elemento`** → O(n)
+  La función recorre la lista desde el primer nodo hasta alcanzar la posición indicada, realizando operaciones de costo constante en cada paso.
+  Por lo tanto, la complejidad es O(n), donde n depende de la posición solicitada.
 
-- **`lista_con_cada_elemento`** → O(n), donde _n_ es la cantidad de elementos.
+- **`lista_con_cada_elemento`** → O(n)
+  La función aplica una función callback a cada elemento de la lista y avanza nodo por nodo hasta el final o hasta que el callback indique detenerse.
+  Cada iteración tiene costo constante.
+  Por lo tanto, la complejidad es O(n), donde n es la cantidad de elementos procesados.
 
-- **`lista_destruir_todo`** → O(n) , donde _n_ es la cantidad de elementos.
+- **`lista_destruir_todo`** → O(n)
+  La función recorre toda la lista liberando cada nodo y ejecutando, si corresponde, la función destructora para cada elemento.
+  Cada operación de liberación tiene costo constante, pero se repite para todos los nodos.
+  Por lo tanto, la complejidad es O(n), donde n es la cantidad de elementos.
 
-- **`lista_destruir`** → O(n), donde _n_ es la cantidad de elementos.
+- **`lista_destruir`** → O(n)
+  La función invoca a `lista_destruir_todo`, recorriendo y liberando todos los nodos de la lista.
+  En caso de que la lista esté vacía, el costo es constante, ya que solo se libera la estructura principal sin recorrer nodos.
+  Por lo tanto, la complejidad es O(n), donde n es la cantidad de elementos.
 
 - **`lista_iterador_crear`** → O(1)
+  La función ejecuta una cantidad constante de pasos, independientemente del tamaño de la lista o de los datos.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_iterador_hay_mas_elementos`** → O(1)
+  La función realiza solo una verificación booleana sin recorrer la lista.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_iterador_siguiente`** → O(1)
+  La función avanza el puntero al siguiente nodo una única vez.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_iterador_obtener_actual`** → O(1)
+  La función accede directamente al elemento actual sin recorrer la lista.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`lista_iterador_destruir`** → O(1)
+  La función libera la memoria ocupada por el iterador.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`pila_crear`** → O(1)
+  La función ejecuta una cantidad constante de pasos: crea una lista interna, reserva memoria para la estructura principal y realiza verificaciones simples.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`pila_apilar`** → O(1)
+  La función inserta un nuevo elemento al inicio o al final de la lista interna, según si está vacía o no.
+  Ambas operaciones (`lista_agregar` y `lista_insertar` en la posición 0) son de costo constante.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`pila_desapilar`** → O(1)
+  La función elimina el primer elemento de la lista interna mediante `lista_eliminar_elemento` con posición 0, operación de costo constante.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`pila_ver_primero`** → O(1)
+  La función accede directamente al primer nodo de la lista interna sin realizar recorridos ni operaciones adicionales.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`pila_cantidad`** → O(1)
+  La función devuelve la cantidad de elementos de la lista interna accediendo directamente a un campo de la estructura.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
-- **`pila_destruir`** → O(n), donde _n_ es la cantidad de elementos.
+- **`pila_destruir`** → O(n)
+  La función invoca a `lista_destruir`, que recorre y libera todos los nodos de la lista interna, y luego libera la estructura principal de la pila.
+  En caso de que la pila esté vacía, el costo es constante, ya que solo se libera la estructura sin recorrer nodos.
+  Por lo tanto, la complejidad es O(n), donde n es la cantidad de elementos almacenados en la pila.
 
 - **`cola_crear`** → O(1)
+  La función ejecuta una cantidad constante de pasos: crea una lista interna, reserva memoria para la estructura principal y realiza verificaciones simples.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`cola_encolar`** → O(1)
+  La función agrega un nuevo elemento al final de la lista interna utilizando `lista_agregar`, que opera en tiempo constante gracias al mantenimiento del puntero al último nodo.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`cola_desencolar`** → O(1)
+  La función elimina el primer elemento de la lista interna mediante `lista_eliminar_elemento` con posición 0, operación de costo constante.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`cola_ver_primero`** → O(1)
+  La función accede directamente al primer nodo de la lista interna sin realizar recorridos ni operaciones adicionales.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
 - **`cola_cantidad`** → O(1)
+  La función devuelve la cantidad de elementos almacenados accediendo directamente al campo cantidad de la lista interna.
+  Por lo tanto, la complejidad es O(1) en todos los casos.
 
-- **`cola_destruir`** → O(n), donde _n_ es la cantidad de elementos.
+- **`cola_destruir`** → O(n)
+  La función invoca a `lista_destruir`, que recorre y libera todos los nodos de la lista interna, y luego libera la estructura principal de la cola.
+  En caso de que la cola esté vacía, el costo es constante, ya que solo se libera la estructura sin recorrer nodos.
+  Por lo tanto, la complejidad es O(n), donde n es la cantidad de elementos almacenados en la cola.

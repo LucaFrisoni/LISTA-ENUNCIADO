@@ -1,8 +1,5 @@
 #include "lista.h"
-#include "cola.h"
-#include "pila.h"
 
-//Si fuese doblemente enlazada tendria anterior tambien
 typedef struct nodo {
 	void *elemento;
 	struct nodo *siguiente;
@@ -18,13 +15,34 @@ struct lista_iterador {
 	nodo_t *actual;
 };
 
-struct pila {
-	lista_t *lista;
-};
+// ------------------------------------------------------------------------------------------------------------
 
-struct cola {
-	lista_t *lista;
-};
+nodo_t *creando_nodo()
+{
+	nodo_t *nuevo_nodo = calloc(1, sizeof(nodo_t));
+	if (!nuevo_nodo)
+		return NULL;
+	return nuevo_nodo;
+}
+
+nodo_t *buscando_nodo_por_pos(lista_t *lista, size_t posicion, nodo_t **previo)
+{
+	if (!lista || posicion >= lista->cantidad)
+		return NULL;
+
+	nodo_t *nodo_actual = lista->primero;
+	nodo_t *nodo_previo = NULL;
+
+	for (size_t i = 0; i < posicion; i++) {
+		nodo_previo = nodo_actual;
+		nodo_actual = nodo_actual->siguiente;
+	}
+
+	if (previo)
+		*previo = nodo_previo;
+
+	return nodo_actual;
+}
 
 // ------------------------------------------------------------------------------------------------------------Lista
 lista_t *lista_crear()
@@ -57,19 +75,18 @@ bool lista_agregar(lista_t *lista, void *dato)
 	if (!lista)
 		return false;
 
-	nodo_t *nuevo_nodo = calloc(1, sizeof(nodo_t));
+	nodo_t *nuevo_nodo = creando_nodo();
 	if (!nuevo_nodo)
 		return false;
 
 	nuevo_nodo->elemento = dato;
-
 	if (!lista->primero) { // lista vacía
 		lista->primero = nuevo_nodo;
-		lista->ultimo = nuevo_nodo;
 	} else { // lista con elementos
 		lista->ultimo->siguiente = nuevo_nodo;
-		lista->ultimo = nuevo_nodo;
 	}
+	lista->ultimo = nuevo_nodo;
+
 	lista->cantidad++;
 	return true;
 }
@@ -90,9 +107,6 @@ bool lista_insertar_posicion_0(lista_t *lista, void *elemento,
 	nuevo_nodo->siguiente = lista->primero;
 	lista->primero = nuevo_nodo;
 
-	if (lista_cantidad(lista) == 0) {
-		lista->ultimo = nuevo_nodo;
-	}
 	lista->cantidad++;
 	return true;
 }
@@ -101,18 +115,17 @@ bool lista_insertar_en_medio(lista_t *lista, void *elemento, size_t posicion,
 			     nodo_t *nuevo_nodo)
 {
 	nodo_t *nodo_previo = NULL;
-	nodo_t *nodo_en_posicion = lista->primero;
 
-	// Recorro hasta la posición
-	for (size_t i = 0; i < posicion; i++) {
-		nodo_previo = nodo_en_posicion;
-		nodo_en_posicion = nodo_en_posicion->siguiente;
-	}
+	nodo_t *nodo_actual =
+		buscando_nodo_por_pos(lista, posicion, &nodo_previo);
+	if (!nodo_actual)
+		return NULL;
 
 	// Insierto el nuevo nodo
 	nodo_previo->siguiente = nuevo_nodo;
 	nuevo_nodo->elemento = elemento;
-	nuevo_nodo->siguiente = nodo_en_posicion;
+	nuevo_nodo->siguiente = nodo_actual;
+
 	lista->cantidad++;
 	return true;
 }
@@ -122,7 +135,7 @@ bool lista_insertar(lista_t *lista, void *elemento, size_t posicion)
 	if (!validando_lista_y_posicion(lista, posicion))
 		return false;
 
-	nodo_t *nuevo_nodo = calloc(1, sizeof(nodo_t));
+	nodo_t *nuevo_nodo = creando_nodo();
 	if (!nuevo_nodo)
 		return false;
 
@@ -159,13 +172,8 @@ void *lista_buscar_elemento(lista_t *lista, size_t posicion)
 	if (!validando_lista_y_posicion(lista, posicion))
 		return NULL;
 
-	nodo_t *nodo_actual = lista->primero;
-
-	for (size_t i = 0; i < posicion; i++) {
-		nodo_actual = nodo_actual->siguiente;
-	}
-
-	return nodo_actual->elemento;
+	nodo_t *nodo = buscando_nodo_por_pos(lista, posicion, NULL);
+	return nodo ? nodo->elemento : NULL;
 }
 //-----------------------------------------------
 size_t lista_con_cada_elemento(lista_t *lista, bool (*f)(void *, void *),
@@ -195,14 +203,11 @@ void *lista_eliminar_elemento(lista_t *lista, size_t posicion)
 	if (!validando_lista_y_posicion(lista, posicion))
 		return NULL;
 
-	nodo_t *nodo_actual = lista->primero;
 	nodo_t *nodo_previo = NULL;
-
-	// Recorro hasta la posición - si posicion es 0 no recorre
-	for (size_t i = 0; i < posicion; i++) {
-		nodo_previo = nodo_actual;
-		nodo_actual = nodo_actual->siguiente;
-	}
+	nodo_t *nodo_actual =
+		buscando_nodo_por_pos(lista, posicion, &nodo_previo);
+	if (!nodo_actual)
+		return NULL;
 
 	void *valor_aux = nodo_actual->elemento;
 
@@ -225,7 +230,7 @@ void *lista_eliminar_elemento(lista_t *lista, size_t posicion)
 //-----------------------------------------------
 void lista_destruir_todo(lista_t *lista, void (*destructor)(void *))
 {
-	if (!lista || lista_vacia(lista))
+	if (!lista)
 		return;
 
 	nodo_t *nodo_actual = lista->primero;
@@ -241,20 +246,9 @@ void lista_destruir_todo(lista_t *lista, void (*destructor)(void *))
 	free(lista);
 }
 //-----------------------------------------------
-//Sirve para cuando queres destruir la lista pero no los datos de los Nodos
 void lista_destruir(lista_t *lista)
 {
-	if (!lista) {
-		return;
-	}
-
-	nodo_t *nodo_actual = lista->primero;
-	while (nodo_actual != NULL) {
-		nodo_t *nodo_prox = nodo_actual->siguiente;
-		free(nodo_actual);
-		nodo_actual = nodo_prox;
-	}
-	free(lista);
+	lista_destruir_todo(lista, NULL);
 }
 //----------------------------------------------- Iterador externo
 lista_iterador_t *lista_iterador_crear(lista_t *lista)
@@ -300,115 +294,4 @@ void lista_iterador_destruir(lista_iterador_t *it)
 		return;
 
 	free(it);
-}
-// -----------------------------------------------Pila
-pila_t *pila_crear()
-{
-	lista_t *lista = lista_crear();
-	if (!lista)
-		return NULL;
-
-	pila_t *pila = calloc(1, sizeof(pila_t));
-	if (!pila) {
-		free(lista);
-		return NULL;
-	}
-
-	pila->lista = lista;
-	return pila;
-}
-
-bool pila_apilar(pila_t *pila, void *elemento)
-{
-	if (!pila)
-		return false;
-
-	if (lista_vacia(pila->lista))
-		return lista_agregar(pila->lista, elemento);
-
-	return lista_insertar(pila->lista, elemento, 0);
-}
-
-void *pila_desapilar(pila_t *pila)
-{
-	if (!pila)
-		return NULL;
-	return lista_eliminar_elemento(pila->lista, 0);
-}
-
-void *pila_ver_primero(pila_t *pila)
-{
-	if (!pila || lista_cantidad(pila->lista) == 0)
-		return NULL;
-
-	return pila->lista->primero->elemento;
-}
-
-size_t pila_cantidad(pila_t *pila)
-{
-	if (!pila)
-		return 0;
-	return lista_cantidad(pila->lista);
-}
-
-void pila_destruir(pila_t *pila)
-{
-	if (!pila)
-		return;
-	lista_destruir(pila->lista);
-	free(pila);
-}
-// -----------------------------------------------Cola
-
-cola_t *cola_crear()
-{
-	lista_t *lista = lista_crear();
-	if (!lista)
-		return NULL;
-
-	cola_t *cola = calloc(1, sizeof(cola_t));
-	if (!cola) {
-		free(lista);
-		return NULL;
-	}
-
-	cola->lista = lista;
-	return cola;
-}
-
-bool cola_encolar(cola_t *cola, void *elemento)
-{
-	if (!cola)
-		return false;
-	return lista_agregar(cola->lista, elemento);
-}
-
-void *cola_desencolar(cola_t *cola)
-{
-	if (!cola)
-		return NULL;
-	return lista_eliminar_elemento(cola->lista, 0);
-}
-
-void *cola_ver_primero(cola_t *cola)
-{
-	if (!cola || lista_cantidad(cola->lista) == 0)
-		return NULL;
-
-	return cola->lista->primero->elemento;
-}
-
-size_t cola_cantidad(cola_t *cola)
-{
-	if (!cola)
-		return 0;
-	return lista_cantidad(cola->lista);
-}
-
-void cola_destruir(cola_t *cola)
-{
-	if (!cola)
-		return;
-	lista_destruir(cola->lista);
-	free(cola);
 }
