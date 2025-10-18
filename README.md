@@ -169,7 +169,9 @@ Esta sección describe cómo se verifican todas las funciones primitivas del pro
 
 ### Cobertura de pruebas
 
-Se realizan **171 pruebas unitarias** que incluyen:
+Se realizan 250 pruebas
+
+Estos tests incluyen:
 
 - 🔹**Pruebas de creacion**
 - 🔹**Pruebas de incercion**
@@ -185,25 +187,19 @@ Se realizan **171 pruebas unitarias** que incluyen:
 Para compilar los tests:
 
 ```bash
-make compilar_t_lista
-make compilar_t_cola
-make compilar_t_pila
+make compilar_t
 ```
 
 Para ejecutar los tests:
 
 ```bash
-./tests_lista
-./tests_cola
-./tests_pila
+./tests
 ```
 
 Para ejecutar con valgrind:
 
 ```bash
-make valgrind_t_lista
-make valgrind_t_cola
-make valgrind_t_pila
+make valgrind_t
 ```
 
 ## 📚 Respuestas a las preguntas teóricas

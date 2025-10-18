@@ -152,7 +152,11 @@ int main(int argc, char *argv[])
 	if (!validando_func(tp1, lista_pokemones))
 		return 0;
 
-	tp1_con_cada_pokemon(tp1, guardar_en_lista, lista_pokemones);
+	size_t cant_pokemones =
+		tp1_con_cada_pokemon(tp1, guardar_en_lista, lista_pokemones);
+
+	if (cant_pokemones == 0)
+		return 0;
 
 	// Buscar por nombre
 	if (strcmp(argv[3], "nombre") == 0)
